@@ -7,7 +7,19 @@ use warnings;
 
 sub BuildAndroid
 {
-	PrepareAndroidSDK::GetAndroidSDK(undef, undef, "r9");
+	# If the ANDROID_NDK_ROOT is already set, assume someone else has prepared the NDK for us.
+	# This will happen when being built by our mono build scripts
+	my $ndkRootToUse = "";
+	if ("$ENV{ANDROID_NDK_ROOT}" ne "")
+	{
+		$ndkRootToUse = $ENV{ANDROID_NDK_ROOT};
+	}
+	else
+	{
+		PrepareAndroidSDK::GetAndroidSDK(undef, undef, "r10e");
+		$ndkRootToUse = $ENV{ANDROID_NDK_ROOT};
+	}
+
 	system('$ANDROID_NDK_ROOT/ndk-build clean');
 	system('$ANDROID_NDK_ROOT/ndk-build');
 }
@@ -25,5 +37,16 @@ sub ZipIt
 	system("cd obj/local/armeabi && zip ../../../builds.zip -r *.a build.txt") && die("Failed to package libraries into zip file.");
 }
 
+my $runningUnderMonoBuild = 0;
+if ("$ENV{ANDROID_NDK_ROOT}" ne "")
+{
+	$runningUnderMonoBuild = 1;
+}
+
 BuildAndroid();
-ZipIt();
+
+# If we are running as part of the mono build, don't zip it, because we don't need the zip
+if (!$runningUnderMonoBuild)
+{
+	ZipIt();
+}
