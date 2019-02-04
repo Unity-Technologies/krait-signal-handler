@@ -7,7 +7,7 @@ use warnings;
 
 sub BuildAndroid
 {
-	PrepareAndroidSDK::GetAndroidSDK(undef, undef, "r16b");
+	PrepareAndroidSDK::GetAndroidSDK(undef, undef, "r19");
 	system('$ANDROID_NDK_ROOT/ndk-build clean');
 	system('$ANDROID_NDK_ROOT/ndk-build');
 }
@@ -18,11 +18,11 @@ sub ZipIt
 
 	# write build info
 	my $git_info = qx(git symbolic-ref -q HEAD && git rev-parse HEAD);
-	open(BUILD_INFO_FILE, '>', "obj/local/armeabi/build.txt") or die("Unable to write build information to build/temp/build.txt");
+	open(BUILD_INFO_FILE, '>', "obj/local/armeabi-v7a/build.txt") or die("Unable to write build information to build/temp/build.txt");
 	print BUILD_INFO_FILE "$git_info";
 	close(BUILD_INFO_FILE);
 
-	system("cd obj/local/armeabi && zip ../../../builds.zip -r *.a build.txt") && die("Failed to package libraries into zip file.");
+	system("cd obj/local/armeabi-v7a && zip ../../../builds.zip -r *.a build.txt") && die("Failed to package libraries into zip file.");
 }
 
 BuildAndroid();
